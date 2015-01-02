@@ -13,7 +13,6 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -24,7 +23,7 @@ public class AchievementManager {
     private static List<JavaPlugin> activePlugins = new ArrayList<>();
     private static HashMap<Achievement, JavaPlugin> registeredAchievements = new HashMap<>();
     
-    public void AchievementManager(JavaPlugin plugin) {
+    public AchievementManager(JavaPlugin plugin) {
         addActivePlugin(plugin);
     }
     
