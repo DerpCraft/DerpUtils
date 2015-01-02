@@ -9,12 +9,13 @@ import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.event.Listener;
 
 /**
  *
  * @author iTidez
  */
-public abstract class Achievement {
+public abstract class Achievement implements Listener {
     public static final String MESSAGE = ".MESSAGE";
     public static final String ACHIEVEMENT = ".ACHIEVEMENT";
     public static final String LORE = ".LORE";
@@ -70,7 +71,7 @@ public abstract class Achievement {
     
     public void giveAchievement(OfflinePlayer player) {
         if(isRegistered())
-            this.manager.giveAchievement(player, this);
+            this.manager.announceAchievement(player, this);
     }
     
     public Material getIcon() {
