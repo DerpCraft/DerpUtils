@@ -14,7 +14,9 @@ import com.cobalt.itidez.derputils.config.ConfigManager;
 import java.util.ArrayList;
 import java.util.List;
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  *
@@ -22,19 +24,62 @@ import org.bukkit.entity.Player;
  */
 public class AnnouncerManager {
     private Config announcements;
+    private List<String> messages;
+    private boolean enabled;
+    private static int index;
     
     public AnnouncerManager() {
         announcements = ConfigManager.createConfig(DerpUtils.getInstance().getDataFolder(), "announcements.yml");
+        messages = new ArrayList<>();
+        enabled = true;
+        index = -1;
         checkDefaults();
+        startAnnouncements();
     }
     
     private void checkDefaults() {
         if(!announcements.hasValue("messages")) {
-            List<String> messages = new ArrayList<>();
             messages.add("This is a test message!");
             announcements.setValue("messages", messages);
+        } else {
+            messages = (List<String>)announcements.getValue("messages");
         }
     }
+    
+    public void startAnnouncements() {
+        enabled = true;
+        announce();
+    }
+    
+    public void stopAnnouncements() {
+        enabled = false;
+    }
+    
+    public void announce() {
+        if(!announcements.hasValue("interval")) {
+            announcements.setValue("interval", 90);
+        }
+        Bukkit.getScheduler().scheduleSyncDelayedTask(DerpUtils.getInstance(), new Runnable() {
+            @Override
+            public void run() {
+                int i = AnnouncerManager.incrementIndex();
+                Bukkit.broadcastMessage(ChatColor.DARK_PURPLE+"["+
+                        ChatColor.DARK_BLUE+"Derp Announcement"+ChatColor.DARK_PURPLE+"] "
+                        +ChatColor.DARK_BLUE+ChatColor.translateAlternateColorCodes('&', messages.get(i)));
+                if(!enabled)
+                    Bukkit.getScheduler().cancelTasks(DerpUtils.getInstance());
+            }
+        }, (int)announcements.getValue("interval") * 20);
+    }
+    
+    public static int incrementIndex() {
+        return index++;
+    }
+    
+    /**
+     * Begin Command Declarations
+     */
+    
     
     @Command(name="announce")
     public void onAnnounce(CommandArgs args) {
@@ -58,10 +103,70 @@ public class AnnouncerManager {
         if(p.hasPermission("derp.announce.reload")) {
             p.sendMessage(ChatColor.DARK_AQUA+"  - reload, rd : Reloads the config");
         }
+        if(p.hasPermission("derp.announce.enable")) {
+            p.sendMessage(ChatColor.DARK_AQUA+"  - on : Starts the announcer");
+            p.sendMessage(ChatColor.DARK_AQUA+"  - off : Stops the announcer");
+        }
     }
     
     @Command(name="announce.reload", aliases={"rd"}, permission="derp.announce.reload")
     public void onAnnounceReload(CommandArgs args) {
         announcements = ConfigManager.createConfig(DerpUtils.getInstance().getDataFolder(), "announcements.yml");
+    }
+    
+    @Command(name="announce.add", aliases={"a"}, permission="derp.announce.add")
+    public void onAnnounceAdd(CommandArgs args) {
+        StringBuilder finalMessage = new StringBuilder();
+        String[] preMessage = args.getArgs();
+        for(String m : preMessage) {
+            finalMessage.append(m);
+        }
+        messages.add(finalMessage.toString());
+        announcements.setValue("messages", messages);
+        args.getPlayer().sendMessage(ChatColor.GREEN+"Successfully added the following announcement:");
+        args.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', finalMessage.toString()));
+    }
+    
+    @Command(name="announce.remove", aliases={"rm"}, permission="derp.announce.remove")
+    public void onAnnounceRemove(CommandArgs args) {
+        int index = 0;
+        try {
+            index = Integer.parseInt(args.getArgs()[0]);
+            index--;
+        } catch(Exception e) {
+            args.getPlayer().sendMessage(ChatColor.RED+"Error: You must specify the index of the announcement to delete!");
+            args.getPlayer().sendMessage(ChatColor.RED+"Please check /announce list for the corresponding index");
+        }
+        
+        if(messages.size() > index) {
+            args.getPlayer().sendMessage(ChatColor.RED+"Error: You specified an index that is not located in the announcement list");
+            args.getPlayer().sendMessage(ChatColor.RED+"Please re-check your number with /announce list");
+        } else {
+            String toDelete = messages.get(index);
+            messages.remove(index);
+            args.getPlayer().sendMessage(ChatColor.GREEN+"Successfully removed the following announcement:");
+            args.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', toDelete));
+            announcements.setValue("messages", messages);
+        }
+    }
+    
+    @Command(name="announce.list", aliases={"li, l"}, permission="derp.announce.list")
+    public void onAnnounceList(CommandArgs args) {
+        Player p = args.getPlayer();
+        p.sendMessage(ChatColor.DARK_PURPLE+"---- "+ChatColor.DARK_AQUA+"Announcements"+ChatColor.DARK_PURPLE+" ----");
+        int i = 1;
+        for(String s : messages) {
+            p.sendMessage(ChatColor.DARK_BLUE+"  ["+i+"] "+ChatColor.WHITE+ChatColor.translateAlternateColorCodes('&', s));
+        }
+    }
+    
+    @Command(name="announce.on", permission="derp.announce.enable")
+    public void onAnnounceOn(CommandArgs args) {
+        startAnnouncements();
+    }
+    
+    @Command(name="announce.off",  permission="derp.announce.enable")
+    public void onAnnounceOff(CommandArgs args) {
+        stopAnnouncements();
     }
 }

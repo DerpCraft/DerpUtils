@@ -5,6 +5,7 @@
 package com.cobalt.itidez.derputils;
 
 import com.cobalt.itidez.derputils.achievements.AchivementManager;
+import com.cobalt.itidez.derputils.announcements.AnnouncerManager;
 import com.cobalt.itidez.derputils.commands.Command;
 import com.cobalt.itidez.derputils.commands.CommandArgs;
 import com.cobalt.itidez.derputils.commands.CommandFramework;
@@ -32,6 +33,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class DerpUtils extends JavaPlugin {
     public CommandFramework framework;
     private AchivementManager achievementManager;
+    private AnnouncerManager announcements;
     private static DerpUtils instance;
     private boolean debug;
     private Config utilsConfig;
@@ -45,9 +47,11 @@ public class DerpUtils extends JavaPlugin {
         updateConfig();
         this.debug = (boolean)utilsConfig.getValue("debug");
         this.achievementManager = new AchivementManager();
+        this.announcements = new AnnouncerManager();
         this.framework = new CommandFramework(this);
         this.framework.registerCommands(this);
         this.framework.registerCommands(achievementManager);
+        this.framework.registerCommands(announcements);
         Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);
         
     }
