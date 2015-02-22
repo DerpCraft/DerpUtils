@@ -59,17 +59,18 @@ public class AnnouncerManager {
         if(!announcements.hasValue("interval")) {
             announcements.setValue("interval", 90);
         }
+        long interval = 20 * (long)announcements.getValue("interval");
         Bukkit.getScheduler().scheduleSyncDelayedTask(DerpUtils.getInstance(), new Runnable() {
             @Override
             public void run() {
                 int i = AnnouncerManager.incrementIndex();
                 Bukkit.broadcastMessage(ChatColor.DARK_PURPLE+"["+
-                        ChatColor.DARK_BLUE+"Derp Announcement"+ChatColor.DARK_PURPLE+"] "
-                        +ChatColor.DARK_BLUE+ChatColor.translateAlternateColorCodes('&', messages.get(i)));
+                        ChatColor.BLUE+"Derp Announcement"+ChatColor.DARK_PURPLE+"] "
+                        +ChatColor.BLUE+ChatColor.translateAlternateColorCodes('&', messages.get(i)));
                 if(!enabled)
                     Bukkit.getScheduler().cancelTasks(DerpUtils.getInstance());
             }
-        }, (int)announcements.getValue("interval") * 20);
+        }, interval);
     }
     
     public static int incrementIndex() {
@@ -139,7 +140,7 @@ public class AnnouncerManager {
         }
         
         if(messages.size() > index) {
-            args.getPlayer().sendMessage(ChatColor.RED+"Error: You specified an index that is not located in the announcement list");
+            args.getPlayer().sendMessage(ChatColor.RED+"Error: Index"+index+" is not located in the announcement list");
             args.getPlayer().sendMessage(ChatColor.RED+"Please re-check your number with /announce list");
         } else {
             String toDelete = messages.get(index);
@@ -163,10 +164,12 @@ public class AnnouncerManager {
     @Command(name="announce.on", permission="derp.announce.enable")
     public void onAnnounceOn(CommandArgs args) {
         startAnnouncements();
+        args.getPlayer().sendMessage(ChatColor.GREEN+"Turned on announcements");
     }
     
     @Command(name="announce.off",  permission="derp.announce.enable")
     public void onAnnounceOff(CommandArgs args) {
         stopAnnouncements();
+        args.getPlayer().sendMessage(ChatColor.GREEN+"Turned off announcements");
     }
 }

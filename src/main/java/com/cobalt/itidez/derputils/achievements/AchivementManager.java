@@ -7,7 +7,6 @@ package com.cobalt.itidez.derputils.achievements;
 import com.cobalt.itidez.derputils.DerpUtils;
 import com.cobalt.itidez.derputils.commands.Command;
 import com.cobalt.itidez.derputils.commands.CommandArgs;
-import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -55,10 +54,14 @@ public class AchivementManager {
             while(!current.equals(":")) {
                 lineBuilder.append(current).append(" ");
                 i++;
-                if(ar[i] == null)
+                try {
+                    if(ar[i] == null)
+                        break;
+                    else
+                        current = ar[i];
+                } catch(Exception ex) {
                     break;
-                else
-                    current = ar[i];
+                }
             }
             i++;
             StringBuilder sublineBuilder = new StringBuilder();
